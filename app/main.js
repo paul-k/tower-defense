@@ -72,7 +72,8 @@ define(function (require) {
 		}) {
 			this.position = position;
 			this.size = 64;
-			this.color = 'rgba(255, 255, 255, 0.15)'
+			this.color = 'rgba(255, 255, 255, 0.15)';
+			this.isOccupied = false;
 		}
 
 		draw() {
@@ -93,8 +94,29 @@ define(function (require) {
 		}
 	}
 
+	class Building {
+		constructor({
+			position = {
+				x: 0,
+				y: 0
+			}
+		}) {
+			this.position = position;
+			this.width = 128;
+			this.height = 64;
+		}
+
+		draw() {
+			c.fillStyle = 'blue';
+			c.fillRect(this.position.x, this.position.y, this.width, this.height);
+		}
+	}
+
 	const enemies = [];
 	const placementTiles = [];
+	const buildings = [];
+
+	let activePlacementTile = undefined;
 
 	const mouse = {
 		x: undefined,
@@ -134,10 +156,37 @@ define(function (require) {
 
 		enemies.forEach(e => e.update());
 		placementTiles.forEach(t => t.update(mouse));
+		buildings.forEach(b => b.draw());
 	}
+
+	canvas.addEventListener('click', (event) => {
+		if (activePlacementTile && !activePlacementTile.isOccupied) {
+			buildings.push(
+				new Building({
+					position: {
+						x: activePlacementTile.position.x,
+						y: activePlacementTile.position.y
+					}
+				})
+			);
+			activePlacementTile.isOccupied = true;
+		}
+	});
 
 	window.addEventListener('mousemove', (event) => {
 		mouse.x = event.clientX;
 		mouse.y = event.clientY;
+
+		activePlacementTile = null;
+
+		for (let i = 0; i < placementTiles.length; i++) {
+			const tile = placementTiles[i];
+			if (
+				mouse.x > tile.position.x && mouse.x < tile.position.x + tile.size &&
+				mouse.y > tile.position.y && mouse.y < tile.position.y + tile.size) {
+				activePlacementTile = tile;
+				break;
+			}
+		}
 	})
 });
