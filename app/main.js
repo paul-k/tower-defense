@@ -43,7 +43,8 @@ define(function (require) {
 			this.center = {
 				x: position.x + (this.width / 2),
 				y: position.y + (this.height / 2)
-			}
+			};
+			this.health = 60;
 		}
 
 		draw() {
@@ -53,7 +54,10 @@ define(function (require) {
 			c.arc(this.center.x, this.center.y, this.radius, 0, Math.PI * 2);
 			c.fill();
 
-			//c.fillRect(this.position.x - (this.width / 2), this.position.y - (this.height / 2), this.width, this.height);
+			c.fillRect(this.position.x, this.position.y - 15, this.width, 10);
+
+			c.fillStyle = 'green';
+			c.fillRect(this.position.x, this.position.y - 15, this.width * (this.health / 100), 10);
 		}
 
 		update() {
@@ -229,8 +233,13 @@ define(function (require) {
 
 		c.drawImage(image, 0, 0);
 
-		enemies.forEach(e => e.update());
+		for (let i = enemies.length - 1; i >= 0; i--) {
+			const e = enemies[i];
+			e.update();
+		}
+
 		placementTiles.forEach(t => t.update(mouse));
+
 		buildings.forEach(b => {
 			b.update();
 			b.target = null;
@@ -253,6 +262,15 @@ define(function (require) {
 				const yDiff = p.enemy.center.y - p.position.y;
 				const distance = Math.hypot(xDiff, yDiff);
 				if (distance < p.enemy.radius) {
+					p.enemy.health -= 20;
+					if (p.enemy.health <= 0) {
+						const eIdx = enemies.findIndex(e => {
+							return p.enemy === e;
+						});
+						if (eIdx > -1) {
+							enemies.splice(eIdx, 1);
+						}
+					}
 					b.projectiles.splice(i, 1);
 				}
 			}
