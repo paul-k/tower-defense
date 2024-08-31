@@ -38,25 +38,38 @@ define(function (require) {
 			this.position = position;
 			this.width = 100;
 			this.height = 100;
+			this.radius = 50;
 			this.waypointIndex = 0;
+			this.center = {
+				x: position.x + (this.width / 2),
+				y: position.y + (this.height / 2)
+			}
 		}
 
 		draw() {
 			c.fillStyle = 'red';
-			c.fillRect(this.position.x - (this.width / 2), this.position.y - (this.height / 2), this.width, this.height);
+
+			c.beginPath();
+			c.arc(this.center.x, this.center.y, this.radius, 0, Math.PI * 2);
+			c.fill();
+
+			//c.fillRect(this.position.x - (this.width / 2), this.position.y - (this.height / 2), this.width, this.height);
 		}
 
 		update() {
 			this.draw();
 
 			const waypoint = waypoints[this.waypointIndex];
-			const velocity = calculateVelocity(waypoint.x, this.position.x, waypoint.y, this.position.y);
+			const velocity = calculateVelocity(waypoint.x, this.center.x, waypoint.y, this.center.y);
 
 			this.position.x += velocity.x;
 			this.position.y += velocity.y;
 
-			if (Math.round(this.position.x) === waypoint.x
-				&& Math.round(this.position.y) === waypoint.y
+			this.center.x = this.position.x + (this.width / 2);
+			this.center.y = this.position.y + (this.height / 2);
+
+			if (Math.round(this.center.x) === waypoint.x
+				&& Math.round(this.center.y) === waypoint.y
 				&& this.waypointIndex < (waypoints.length - 1)) {
 				this.waypointIndex++;
 			}
@@ -71,22 +84,23 @@ define(function (require) {
 			}
 		}) {
 			this.position = position;
-			this.size = 64;
+			this.width = 128;
+			this.height = 64;
 			this.color = 'rgba(255, 255, 255, 0.15)';
 			this.isOccupied = false;
 		}
 
 		draw() {
 			c.fillStyle = this.color;
-			c.fillRect(this.position.x, this.position.y, this.size, this.size);
+			c.fillRect(this.position.x, this.position.y, this.width, this.height);
 		}
 
 		update(mouse) {
 			this.draw();
 
 			if (
-				mouse.x > this.position.x && mouse.x < this.position.x + this.size &&
-				mouse.y > this.position.y && mouse.y < this.position.y + this.size) {
+				mouse.x > this.position.x && mouse.x < this.position.x + this.width &&
+				mouse.y > this.position.y && mouse.y < this.position.y + this.height) {
 				this.color = 'white';
 			} else {
 				this.color = 'rgba(255, 255, 255, 0.15)';
@@ -104,6 +118,19 @@ define(function (require) {
 			this.position = position;
 			this.width = 128;
 			this.height = 64;
+			this.center = {
+				x: this.position.x + (this.width / 2),
+				y: this.position.y + (this.height / 2)
+			}
+			this.projectiles = [
+				new Projectile({
+					position: {
+						x: this.center.x,
+						y: this.center.y
+					},
+					enemy: enemies[0]
+				})
+			];
 		}
 
 		draw() {
@@ -111,6 +138,37 @@ define(function (require) {
 			c.fillRect(this.position.x, this.position.y, this.width, this.height);
 		}
 	}
+
+	class Projectile {
+		constructor({
+			position = {
+				x: 0,
+				y: 0
+			},
+			enemy
+		}) {
+			this.position = position;
+			this.radius = 10;
+			this.enemy = enemy;
+		}
+
+		draw() {
+			c.beginPath();
+			c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+			c.fillStyle = 'orange';
+			c.fill();
+		}
+
+		update() {
+			this.draw();
+
+			const velocity = calculateVelocity(this.enemy.center.x, this.position.x, this.enemy.center.y, this.position.y);
+
+			this.position.x += velocity.x;
+			this.position.y += velocity.y;
+		}
+	}
+
 
 	const enemies = [];
 	const placementTiles = [];
@@ -147,8 +205,6 @@ define(function (require) {
 		});
 	})
 
-	console.log('placementTiles:', placementTiles)
-
 	function animate() {
 		requestAnimationFrame(animate);
 
@@ -156,7 +212,21 @@ define(function (require) {
 
 		enemies.forEach(e => e.update());
 		placementTiles.forEach(t => t.update(mouse));
-		buildings.forEach(b => b.draw());
+		buildings.forEach(b => {
+			b.draw();
+
+			for (let i = b.projectiles.length - 1; i >= 0; i--) {
+				const p = b.projectiles[i];
+				p.update();
+
+				const xDiff = p.enemy.center.x - p.position.x;
+				const yDiff = p.enemy.center.y - p.position.y;
+				const distance = Math.hypot(xDiff, yDiff);
+				if (distance < p.enemy.radius) {
+					b.projectiles.splice(i, 1);
+				}
+			}
+		});
 	}
 
 	canvas.addEventListener('click', (event) => {
@@ -182,8 +252,8 @@ define(function (require) {
 		for (let i = 0; i < placementTiles.length; i++) {
 			const tile = placementTiles[i];
 			if (
-				mouse.x > tile.position.x && mouse.x < tile.position.x + tile.size &&
-				mouse.y > tile.position.y && mouse.y < tile.position.y + tile.size) {
+				mouse.x > tile.position.x && mouse.x < tile.position.x + tile.width &&
+				mouse.y > tile.position.y && mouse.y < tile.position.y + tile.height) {
 				activePlacementTile = tile;
 				break;
 			}
