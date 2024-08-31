@@ -1,1 +1,1 @@
-requirejs(['scripts/main']);
+requirejs(['app/main']);
