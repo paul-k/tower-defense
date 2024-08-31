@@ -118,24 +118,42 @@ define(function (require) {
 			this.position = position;
 			this.width = 128;
 			this.height = 64;
+			this.radius = 250;
 			this.center = {
 				x: this.position.x + (this.width / 2),
 				y: this.position.y + (this.height / 2)
 			}
-			this.projectiles = [
-				new Projectile({
-					position: {
-						x: this.center.x,
-						y: this.center.y
-					},
-					enemy: enemies[0]
-				})
-			];
+			this.target = undefined;
+			this.frames = 0;
+			this.projectiles = [];
 		}
 
 		draw() {
 			c.fillStyle = 'blue';
 			c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+			c.fillStyle = 'rgba(0, 0, 255, 0.15)';
+			c.beginPath();
+			c.arc(this.center.x, this.center.y, this.radius, 0, Math.PI * 2);
+			c.fill();
+		}
+
+		update() {
+			this.draw();
+
+			if (this.target && this.frames % 100 === 0) {
+				this.projectiles.push(
+					new Projectile({
+						position: {
+							x: this.center.x,
+							y: this.center.y
+						},
+						enemy: this.target
+					})
+				)
+			}
+
+			this.frames++;
 		}
 	}
 
@@ -150,6 +168,7 @@ define(function (require) {
 			this.position = position;
 			this.radius = 10;
 			this.enemy = enemy;
+			this.power = 5;
 		}
 
 		draw() {
@@ -164,8 +183,8 @@ define(function (require) {
 
 			const velocity = calculateVelocity(this.enemy.center.x, this.position.x, this.enemy.center.y, this.position.y);
 
-			this.position.x += velocity.x;
-			this.position.y += velocity.y;
+			this.position.x += velocity.x * this.power;
+			this.position.y += velocity.y * this.power;
 		}
 	}
 
@@ -213,7 +232,18 @@ define(function (require) {
 		enemies.forEach(e => e.update());
 		placementTiles.forEach(t => t.update(mouse));
 		buildings.forEach(b => {
-			b.draw();
+			b.update();
+			b.target = null;
+
+			const validEnemies = enemies.filter(e => {
+				const xDiff = e.center.x - b.center.x;
+				const yDiff = e.center.y - b.center.y;
+				const distance = Math.hypot(xDiff, yDiff);
+
+				return (distance < e.radius + b.radius);
+			});
+
+			b.target = validEnemies[0];
 
 			for (let i = b.projectiles.length - 1; i >= 0; i--) {
 				const p = b.projectiles[i];
