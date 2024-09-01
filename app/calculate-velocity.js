@@ -1,29 +1,20 @@
-define(
+/**
+ * @param {number} startX
+ * @param {number} endX
+ * @param {number} startY
+ * @param {number} endY
+ * 
+ * @returns {Coord}
+ */
+export function calculateVelocity(startX, endX, startY, endY) {
 
-	/**
-	 * @callback CalculateVelocityFunc
-	 * 
-	 * @param {number} startX
-	 * @param {number} endX
-	 * @param {number} startY
-	 * @param {number} endY
-	 * 
-	 * @returns {Coord}
-	 */
+	const yDist = startY - endY;
+	const xDist = startX - endX;
 
-	/** @returns {CalculateVelocityFunc} */
-	function () {
-		return function (startX, endX, startY, endY) {
+	const angle = Math.atan2(yDist, xDist);
 
-			const yDist = startY - endY;
-			const xDist = startX - endX;
-
-			const angle = Math.atan2(yDist, xDist);
-
-			return {
-				x: Math.cos(angle),
-				y: Math.sin(angle)
-			};
-		}
-
-	});
+	return {
+		x: Math.cos(angle),
+		y: Math.sin(angle)
+	};
+}
