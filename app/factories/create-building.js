@@ -59,7 +59,8 @@ define(
 
 			}
 
-			function update() {
+			/** @param {Enemy[]} enemies */
+			function update(enemies) {
 				draw();
 				if (target && frames % 100 === 0) {
 					projectiles.push(
@@ -75,25 +76,27 @@ define(
 				}
 
 				frames++;
+
+				setTarget(enemies);
 			}
 
-			function unsetTarget() {
-				target = null;
-			}
+			/** @param {Enemy[]} enemies */
+			function setTarget(enemies) {
 
-			/** @param {Enemy} enemy */
-			function setTarget(enemy) {
-				target = enemy;
+				const newTarget = enemies.find(e => {
+					const xDiff = e.center.x - center.x;
+					const yDiff = e.center.y - center.y;
+					const distance = Math.hypot(xDiff, yDiff);
+
+					return (distance < e.radius + radius);
+				});
+
+				target = newTarget;
 			}
 
 			return {
-				position,
-				radius,
-				center,
 				projectiles,
-				update,
-				unsetTarget,
-				setTarget
+				update
 			};
 		}
 

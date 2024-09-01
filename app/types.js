@@ -33,14 +33,9 @@
 /**
  * @typedef {Object} Building
  * 
- * @property {Coord} center
- * @property {Coord} position
  * @property {Projectile[]} projectiles
- * @property {number} radius
  * 
- * @property {() => void} update
- * @property {() => void} unsetTarget
- * @property {(enemy: Enemy) => void} setTarget
+ * @property {(enemies: Enemy[]) => void} update
  */
 
 

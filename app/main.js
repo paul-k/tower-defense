@@ -84,19 +84,7 @@ define(
 			placementTiles.forEach(t => t.update(mouse));
 
 			buildings.forEach(b => {
-				b.update();
-
-				b.unsetTarget();
-
-				const validEnemies = enemies.filter(e => {
-					const xDiff = e.center.x - b.center.x;
-					const yDiff = e.center.y - b.center.y;
-					const distance = Math.hypot(xDiff, yDiff);
-
-					return (distance < e.radius + b.radius);
-				});
-
-				b.setTarget(validEnemies[0]);
+				b.update(enemies);
 
 				for (let i = b.projectiles.length - 1; i >= 0; i--) {
 					const p = b.projectiles[i];
@@ -108,9 +96,7 @@ define(
 					if (distance < p.enemy.radius) {
 						p.enemy.takeHit(20);
 						if (p.enemy.isDead()) {
-							const eIdx = enemies.findIndex(e => {
-								return p.enemy === e;
-							});
+							const eIdx = enemies.indexOf(p.enemy);
 							if (eIdx > -1) {
 								enemies.splice(eIdx, 1);
 							}
@@ -123,15 +109,11 @@ define(
 
 		canvas.addEventListener('click', () => {
 			if (activePlacementTile && !activePlacementTile.isOccupied) {
-				buildings.push(
-					createBuilding({
-						canvas: c2d,
-						position: {
-							x: activePlacementTile.position.x,
-							y: activePlacementTile.position.y
-						}
-					})
-				);
+				const building = createBuilding({
+					canvas: c2d,
+					position: { ...activePlacementTile.position },
+				});
+				buildings.push(building);
 				activePlacementTile.isOccupied = true;
 			}
 		});
@@ -140,16 +122,9 @@ define(
 			mouse.x = event.clientX;
 			mouse.y = event.clientY;
 
-			activePlacementTile = null;
-
-			for (let i = 0; i < placementTiles.length; i++) {
-				const tile = placementTiles[i];
-				if (
-					mouse.x > tile.position.x && mouse.x < tile.position.x + tile.width &&
-					mouse.y > tile.position.y && mouse.y < tile.position.y + tile.height) {
-					activePlacementTile = tile;
-					break;
-				}
-			}
+			activePlacementTile = placementTiles.find(tile =>
+				mouse.x > tile.position.x && mouse.x < tile.position.x + tile.width &&
+				mouse.y > tile.position.y && mouse.y < tile.position.y + tile.height
+			);
 		})
 	});
