@@ -1,11 +1,13 @@
+import { c2d } from '../canvas.js';
+import { createSprite } from './create-sprite.js';
 import { calculateVelocity } from '../calculate-velocity.js';
 import { waypoints } from '../level1/waypoints.js';
 
 /**
  * @typedef {Object} CreateEnemyConfig
  * 
- * @property {CanvasRenderingContext2D} canvas
  * @property {Coord?} startPosition
+ * @property {number} startHealth
  */
 
 /**
@@ -13,9 +15,16 @@ import { waypoints } from '../level1/waypoints.js';
  * @return {Enemy}
  */
 
-export function createEnemy({ canvas, startPosition = { x: 0, y: 0 } }) {
+export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 }) {
 	/** @type {Coord} */
 	const position = startPosition;
+
+	/** @type {Sprite} */
+	const sprite = createSprite({
+		position: position,
+		imageSrc: './app/sprites/orc.png',
+		maxNumberOfFrames: 7
+	})
 
 	/** @type {number} */
 	const width = 100;
@@ -27,7 +36,7 @@ export function createEnemy({ canvas, startPosition = { x: 0, y: 0 } }) {
 	const radius = 50;
 
 	/** @type {number} */
-	let health = 60;
+	let health = startHealth;
 
 	/** @type {Coord} */
 	const center = {
@@ -40,21 +49,19 @@ export function createEnemy({ canvas, startPosition = { x: 0, y: 0 } }) {
 
 
 	function draw() {
-		canvas.fillStyle = 'red';
+		sprite.draw();
 
-		canvas.beginPath();
-		canvas.arc(center.x, center.y, radius, 0, Math.PI * 2);
-		canvas.fill();
+		c2d.fillStyle = 'red';
+		c2d.fillRect(position.x, position.y - 15, width, 10);
 
-		canvas.fillRect(position.x, position.y - 15, width, 10);
-
-		canvas.fillStyle = 'green';
-		canvas.fillRect(position.x, position.y - 15, width * (health / 100), 10);
+		c2d.fillStyle = 'green';
+		c2d.fillRect(position.x, position.y - 15, width * (health / 100), 10);
 	}
 
 
 	function update() {
 		draw();
+		sprite.update();
 
 		const waypoint = waypoints[waypointIndex];
 		const velocity = calculateVelocity(waypoint.x, center.x, waypoint.y, center.y);
@@ -90,6 +97,7 @@ export function createEnemy({ canvas, startPosition = { x: 0, y: 0 } }) {
 		center,
 		health,
 		radius,
+		position,
 		update,
 		takeHit,
 		isDead

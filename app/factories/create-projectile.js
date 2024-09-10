@@ -1,9 +1,8 @@
+import { createSprite } from './create-sprite.js';
 import { calculateVelocity } from '../calculate-velocity.js';
 
 /**
  * @typedef {Object} CreateProjectileConfig
- * 
- * @property {CanvasRenderingContext2D} canvas
  * @property {Coord?} startPosition
  * @property {Enemy} enemy
  */
@@ -13,10 +12,16 @@ import { calculateVelocity } from '../calculate-velocity.js';
  * @return {Projectile}
  */
 
-export function createProjectile({ canvas, startPosition = { x: 0, y: 0 }, enemy }) {
+export function createProjectile({ startPosition = { x: 0, y: 0 }, enemy }) {
 
 	/** @type {Coord} */
 	const position = startPosition;
+
+	/** @type {Sprite} */
+	const sprite = createSprite({
+		position,
+		imageSrc: './app/sprites/projectile.png'
+	})
 
 	/** @type {number} */
 	const radius = 10;
@@ -24,15 +29,8 @@ export function createProjectile({ canvas, startPosition = { x: 0, y: 0 }, enemy
 	/** @type {number} */
 	const power = 5;
 
-	function draw() {
-		canvas.beginPath();
-		canvas.arc(position.x, position.y, radius, 0, Math.PI * 2);
-		canvas.fillStyle = 'orange';
-		canvas.fill();
-	}
-
 	function update() {
-		draw();
+		sprite.draw();
 		const velocity = calculateVelocity(enemy.center.x, position.x, enemy.center.y, position.y);
 
 		position.x += velocity.x * power;

@@ -5,6 +5,25 @@
  * @property {number} y
  */
 
+/**
+ * @typedef {Object} Frames
+ * 
+ * @property {number} max
+ * @property {number} current
+ * @property {number} elapsed
+ * @property {number} hold
+ * @property {number} width
+ */
+
+/**
+ * @typedef {Object} Sprite
+ * 
+ * @property {Frames} frames
+ * 
+ * @property {() => void} draw
+ * @property {() => void} update
+ */
+
 
 /**
  * @typedef {Object} Enemy
@@ -12,6 +31,7 @@
  * @property {Coord} center
  * @property {number} health
  * @property {number} radius
+ * @property {Coord} position
  * 
  * @property {() => void} update
  * @property {(amount: number) => void} takeHit
@@ -33,6 +53,7 @@
 /**
  * @typedef {Object} Building
  * 
+ * @property {Coord} position
  * @property {Projectile[]} projectiles
  * 
  * @property {(enemies: Enemy[]) => void} update

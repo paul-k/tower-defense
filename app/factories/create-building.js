@@ -1,9 +1,9 @@
+import { createSprite } from './create-sprite.js';
 import { createProjectile } from './create-projectile.js';
 
 /**
  * @typedef {Object} CreateBuildingConfig
  * 
- * @property {CanvasRenderingContext2D} canvas
  * @property {Coord?} position
  */
 
@@ -12,7 +12,18 @@ import { createProjectile } from './create-projectile.js';
  * @return {Building}
  */
 
-export function createBuilding({ canvas, position = { x: 0, y: 0 } }) {
+export function createBuilding({ position = { x: 0, y: 0 } }) {
+
+	/** @type {Sprite} */
+	const sprite = createSprite({
+		position,
+		imageSrc: './app/sprites/tower.png',
+		maxNumberOfFrames: 19,
+		offset: {
+			x: 0,
+			y: -80
+		}
+	})
 
 	/** @type {number} */
 	const width = 128;
@@ -29,45 +40,39 @@ export function createBuilding({ canvas, position = { x: 0, y: 0 } }) {
 		y: position.y + (height / 2)
 	};
 
-	/** @type {number} */
-	let frames = 0;
-
 	/** @type {Enemy} */
 	let target = undefined;
 
 	/** @type {Projectile[]} */
 	const projectiles = [];
 
-	function draw() {
-		canvas.fillStyle = 'blue';
-		canvas.fillRect(position.x, position.y, width, height);
-
-		canvas.fillStyle = 'rgba(0, 0, 255, 0.15)';
-		canvas.beginPath();
-		canvas.arc(center.x, center.y, radius, 0, Math.PI * 2);
-		canvas.fill();
-
-	}
-
 	/** @param {Enemy[]} enemies */
 	function update(enemies) {
-		draw();
-		if (target && frames % 100 === 0) {
-			projectiles.push(
-				createProjectile({
-					canvas,
-					startPosition: {
-						x: center.x,
-						y: center.y
-					},
-					enemy: target
-				})
-			)
+		sprite.draw();
+
+		if (target || (!target && sprite.frames.current !== 0)) {
+			sprite.update();
 		}
 
-		frames++;
+		if (target &&
+			sprite.frames.current === 6 &&
+			sprite.frames.elapsed % sprite.frames.hold === 0) {
+			shoot();
+		}
 
 		setTarget(enemies);
+	}
+
+	function shoot() {
+		projectiles.push(
+			createProjectile({
+				startPosition: {
+					x: center.x,
+					y: center.y
+				},
+				enemy: target
+			})
+		)
 	}
 
 	/** @param {Enemy[]} enemies */
@@ -85,6 +90,7 @@ export function createBuilding({ canvas, position = { x: 0, y: 0 } }) {
 	}
 
 	return {
+		position,
 		projectiles,
 		update
 	};

@@ -1,15 +1,8 @@
-import { createEnemy } from './factories/create-enemy.js';
+import { canvas, c2d } from './canvas.js';
 import { createBuilding } from './factories/create-building.js';
 import { createPlacementTile } from './factories/create-placement-tile.js';
-import { waypoints } from './level1/waypoints.js';
 import { placements } from './level1/placements.js';
-
-
-const canvas = document.querySelector('canvas');
-canvas.width = 1280;
-canvas.height = 768;
-
-const c2d = canvas.getContext('2d');
+import { spawnEnemies } from './spawn-enemies.js';
 
 const image = new Image();
 image.onload = () => {
@@ -29,6 +22,9 @@ const buildings = [];
 /** @type {PlacementTile} */
 let activePlacementTile = undefined;
 
+/** @type {number} */
+let enemyCount = 3;
+
 /** @type {Coord} */
 const mouse = {
 	x: undefined,
@@ -36,20 +32,11 @@ const mouse = {
 };
 
 
-const { x, y } = waypoints[0];
-
-for (let i = 0; i < 10; i++) {
-	enemies.push(
-		createEnemy({ canvas: c2d, startPosition: { x: x - (i * 150), y } })
-	)
-}
-
 placements.forEach((row, y) => {
 	row.forEach((canPlaceHere, x) => {
 		if (canPlaceHere) {
 			placementTiles.push(
 				createPlacementTile({
-					canvas: c2d,
 					position: {
 						x: x * 64,
 						y: y * 64
@@ -68,6 +55,11 @@ function animate() {
 	for (let i = enemies.length - 1; i >= 0; i--) {
 		const e = enemies[i];
 		e.update();
+	}
+
+	if (enemies.length === 0) {
+		enemyCount += 2
+		spawnEnemies(enemies, enemyCount)
 	}
 
 	placementTiles.forEach(t => t.update(mouse));
@@ -99,7 +91,6 @@ function animate() {
 canvas.addEventListener('click', () => {
 	if (activePlacementTile && !activePlacementTile.isOccupied) {
 		const building = createBuilding({
-			canvas: c2d,
 			position: { ...activePlacementTile.position },
 		});
 		buildings.push(building);
@@ -116,4 +107,3 @@ window.addEventListener('mousemove', (event) => {
 		mouse.y > tile.position.y && mouse.y < tile.position.y + tile.height
 	);
 })
-//	});

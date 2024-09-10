@@ -1,7 +1,8 @@
+import { c2d } from "../canvas.js";
+
 /**
  * @typedef {Object} CreatePlacementTileConfig
  * 
- * @property {CanvasRenderingContext2D} canvas
  * @property {Coord?} position
  */
 
@@ -10,7 +11,7 @@
  * @return {PlacementTile}
  */
 
-export function createPlacementTile({ canvas, position = { x: 0, y: 0 } }) {
+export function createPlacementTile({ position = { x: 0, y: 0 } }) {
 
 	/** @type {number} */
 	const width = 128;
@@ -26,8 +27,8 @@ export function createPlacementTile({ canvas, position = { x: 0, y: 0 } }) {
 
 
 	function draw() {
-		canvas.fillStyle = color;
-		canvas.fillRect(position.x, position.y, width, height);
+		c2d.fillStyle = color;
+		c2d.fillRect(position.x, position.y, width, height);
 	}
 
 	/**
