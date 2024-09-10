@@ -12,8 +12,17 @@
  * @property {number} current
  * @property {number} elapsed
  * @property {number} hold
- * @property {number} width
  */
+
+/**
+ * @typedef {Object} LoadedImage
+ * 
+ * @property {CanvasImageSource} image
+ * @property {number} frameCount
+ * @property {number} frameWidth
+ * @property {number} frameHeight
+ */
+
 
 /**
  * @typedef {Object} Sprite

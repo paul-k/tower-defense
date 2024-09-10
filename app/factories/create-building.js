@@ -1,5 +1,6 @@
 import { createSprite } from './create-sprite.js';
 import { createProjectile } from './create-projectile.js';
+import { building } from '../images.js';
 
 /**
  * @typedef {Object} CreateBuildingConfig
@@ -17,8 +18,7 @@ export function createBuilding({ position = { x: 0, y: 0 } }) {
 	/** @type {Sprite} */
 	const sprite = createSprite({
 		position,
-		imageSrc: './app/sprites/tower.png',
-		maxNumberOfFrames: 19,
+		image: building,
 		offset: {
 			x: 0,
 			y: -80

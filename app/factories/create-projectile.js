@@ -1,5 +1,6 @@
 import { createSprite } from './create-sprite.js';
 import { calculateVelocity } from '../calculate-velocity.js';
+import { projectile } from '../images.js';
 
 /**
  * @typedef {Object} CreateProjectileConfig
@@ -20,7 +21,7 @@ export function createProjectile({ startPosition = { x: 0, y: 0 }, enemy }) {
 	/** @type {Sprite} */
 	const sprite = createSprite({
 		position,
-		imageSrc: './app/sprites/projectile.png'
+		image: projectile
 	})
 
 	/** @type {number} */

@@ -2,6 +2,7 @@ import { c2d } from '../canvas.js';
 import { createSprite } from './create-sprite.js';
 import { calculateVelocity } from '../calculate-velocity.js';
 import { waypoints } from '../level1/waypoints.js';
+import { enemy } from '../images.js';
 
 /**
  * @typedef {Object} CreateEnemyConfig
@@ -22,8 +23,7 @@ export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 
 	/** @type {Sprite} */
 	const sprite = createSprite({
 		position: position,
-		imageSrc: './app/sprites/orc.png',
-		maxNumberOfFrames: 7
+		image: enemy
 	})
 
 	/** @type {number} */
