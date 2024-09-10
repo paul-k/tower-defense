@@ -9,6 +9,7 @@ import { enemy } from '../images.js';
  * 
  * @property {Coord?} startPosition
  * @property {number} startHealth
+ * @property {number} speedMultiplier
  */
 
 /**
@@ -16,7 +17,7 @@ import { enemy } from '../images.js';
  * @return {Enemy}
  */
 
-export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 }) {
+export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100, speedMultiplier = 1 }) {
 	/** @type {Coord} */
 	const position = startPosition;
 
@@ -27,10 +28,10 @@ export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 
 	})
 
 	/** @type {number} */
-	const width = 100;
+	const width = 106;
 
 	/** @type {number} */
-	const height = 100;
+	const height = 79;
 
 	/** @type {number} */
 	const radius = 50;
@@ -64,7 +65,7 @@ export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 
 		sprite.update();
 
 		const waypoint = waypoints[waypointIndex];
-		const velocity = calculateVelocity(waypoint.x, center.x, waypoint.y, center.y);
+		const velocity = calculateVelocity(waypoint.x, center.x, waypoint.y, center.y, speedMultiplier);
 
 		position.x += velocity.x;
 		position.y += velocity.y;
@@ -72,8 +73,8 @@ export function createEnemy({ startPosition = { x: 0, y: 0 }, startHealth = 100 
 		center.x = position.x + (width / 2);
 		center.y = position.y + (height / 2);
 
-		if (Math.round(center.x) === waypoint.x
-			&& Math.round(center.y) === waypoint.y
+		if (Math.abs(Math.round(center.x) - waypoint.x) <= Math.round(velocity.x)
+			&& Math.abs(Math.round(center.y) - waypoint.y) <= Math.round(velocity.y)
 			&& waypointIndex < (waypoints.length - 1)) {
 			waypointIndex++;
 		}

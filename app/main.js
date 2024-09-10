@@ -7,6 +7,7 @@ import { createSprite } from './factories/create-sprite.js';
 
 import { placements } from './level1/placements.js';
 import { spawnEnemies } from './spawn-enemies.js';
+import { updateLivesDisplay, showGameOver, updateCoinsDisplay, updateWaveDisplay } from './document-updates.js';
 
 async function main() {
 
@@ -14,6 +15,9 @@ async function main() {
 
 	/** @type {Enemy[]} */
 	const enemies = [];
+
+	/** @type {number} */
+	const initialEnemyCount = 3;
 
 	/** @type {PlacementTile[]} */
 	const placementTiles = [];
@@ -24,11 +28,17 @@ async function main() {
 	/** @type {Sprite[]} */
 	const explosions = [];
 
+	/** @type {number} */
+	let lives = 10;
+
+	/** @type {number} */
+	let coins = 100;
+
 	/** @type {PlacementTile} */
 	let activePlacementTile = undefined;
 
 	/** @type {number} */
-	let enemyCount = 3;
+	let wave = 1;
 
 	/** @type {Coord} */
 	const mouse = {
@@ -53,13 +63,24 @@ async function main() {
 	})
 
 	function animate() {
-		requestAnimationFrame(animate);
+		const animationId = requestAnimationFrame(animate);
 
 		c2d.drawImage(map.image, 0, 0);
 
 		for (let i = enemies.length - 1; i >= 0; i--) {
 			const e = enemies[i];
 			e.update();
+
+			if (e.position.x > canvas.width) {
+				lives -= 1
+				enemies.splice(i, 1)
+				updateLivesDisplay(lives);
+
+				if (lives === 0) {
+					cancelAnimationFrame(animationId)
+					showGameOver();
+				}
+			}
 		}
 
 		for (let i = explosions.length - 1; i >= 0; i--) {
@@ -72,9 +93,13 @@ async function main() {
 			}
 		}
 
+		console.log(enemies.length)
 		if (enemies.length === 0) {
-			enemyCount += 2
-			spawnEnemies(enemies, enemyCount)
+			wave += 1;
+			updateWaveDisplay(wave);
+			const newEnemyCount = initialEnemyCount + ((wave - 1) * 2);
+			console.log('SPAWN!', newEnemyCount, enemies, wave);
+			spawnEnemies(enemies, newEnemyCount, wave);
 		}
 
 		placementTiles.forEach(t => t.update(mouse));
@@ -95,6 +120,8 @@ async function main() {
 						const eIdx = enemies.indexOf(p.enemy);
 						if (eIdx > -1) {
 							enemies.splice(eIdx, 1);
+							coins += 25;
+							updateCoinsDisplay(coins);
 						}
 					}
 
@@ -111,11 +138,14 @@ async function main() {
 		});
 	}
 
+	spawnEnemies(enemies, initialEnemyCount, wave);
 	animate();
 
 
 	canvas.addEventListener('click', () => {
-		if (activePlacementTile && !activePlacementTile.isOccupied) {
+		if (activePlacementTile && !activePlacementTile.isOccupied && coins >= 50) {
+			coins -= 50;
+			updateCoinsDisplay(coins);
 			const building = createBuilding({
 				position: { ...activePlacementTile.position },
 			});
