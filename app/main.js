@@ -1,10 +1,12 @@
 import { canvas, c2d } from './canvas.js';
+import { explosion, map, preloadImages } from './images.js';
+
 import { createBuilding } from './factories/create-building.js';
 import { createPlacementTile } from './factories/create-placement-tile.js';
-import { preloadImages } from './images.js';
+import { createSprite } from './factories/create-sprite.js';
+
 import { placements } from './level1/placements.js';
 import { spawnEnemies } from './spawn-enemies.js';
-import { map } from './images.js';
 
 async function main() {
 
@@ -18,6 +20,9 @@ async function main() {
 
 	/** @type {Building[]} */
 	const buildings = [];
+
+	/** @type {Sprite[]} */
+	const explosions = [];
 
 	/** @type {PlacementTile} */
 	let activePlacementTile = undefined;
@@ -57,6 +62,16 @@ async function main() {
 			e.update();
 		}
 
+		for (let i = explosions.length - 1; i >= 0; i--) {
+			const explosion = explosions[i]
+			explosion.draw()
+			explosion.update()
+
+			if (explosion.frames.current >= explosion.frames.max - 1) {
+				explosions.splice(i, 1)
+			}
+		}
+
 		if (enemies.length === 0) {
 			enemyCount += 2
 			spawnEnemies(enemies, enemyCount)
@@ -82,6 +97,14 @@ async function main() {
 							enemies.splice(eIdx, 1);
 						}
 					}
+
+					explosions.push(
+						createSprite({
+							position: p.position,
+							image: explosion
+						})
+					)
+
 					b.projectiles.splice(i, 1);
 				}
 			}
@@ -96,8 +119,11 @@ async function main() {
 			const building = createBuilding({
 				position: { ...activePlacementTile.position },
 			});
-			buildings.push(building);
 			activePlacementTile.isOccupied = true;
+			buildings.push(building);
+			buildings.sort((a, b) => {
+				return a.position.y - b.position.y;
+			});
 		}
 	});
 

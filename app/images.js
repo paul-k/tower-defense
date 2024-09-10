@@ -33,7 +33,7 @@ export async function preloadImages() {
 	});
 
 	map = await createImageAsync({
-		imageSrc: './level1/map.png',
+		imageSrc: './app/level1/map.png',
 	});
 
 	projectile = await createImageAsync({
